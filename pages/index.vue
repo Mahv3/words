@@ -19,6 +19,8 @@
                 <template v-for="(word,index) in $store.getters.getWords">
                   <v-list-item
                     :key="index"
+                    link
+                    @click.prevent="wordDetail(index)"
                   >
                     <v-list-item-avatar color="grey darken-1">
                     </v-list-item-avatar>
@@ -45,9 +47,27 @@
 
 <script>
 import Navigation from '~/components/Navigation.vue'
+import firebase from '~/plugins/firebase'
   export default {
+    data(){
+      return{
+        words:[],
+        word:{
+          sentence:'',
+          publisher:'',
+          author:''
+        }
+      }
+    },
     created() {
         this.$store.dispatch("fetchUsers");
+    },
+    methods:{
+      wordDetail(index){
+        this.words = this.$store.getters.getWords
+        const id = this.words[index].id
+        this.$router.push(`/word/${id}`)
+      }
     }
   }
 </script>

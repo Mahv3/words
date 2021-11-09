@@ -30,7 +30,8 @@ export default {
             firebase.auth().currentUser.updatePassword(newPassword)
                 .then(()=>{
                     alert('パスワードを変更しました。')
-                    this.$router.push('/')
+                    firebase.auth().signOut()
+                    this.$router.push('/login')
                 })
                 .catch(()=>{
                     if(passLength < 6){
@@ -39,7 +40,7 @@ export default {
                 })
         },
         passwordReset(){
-            const email = this.$store.getters.user.email
+            const  email = firebase.auth().currentUser.email
             firebase.auth().sendPasswordResetEmail(email)
                 .then(()=>{
                     alert('emailにパスワード変更のリンクを送信しました')

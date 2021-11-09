@@ -13,7 +13,7 @@
           size="64"
         ></v-avatar>
 
-        <!-- <div>{{ $store.getters.user.email }}</div> -->
+        <div>{{ user.displayName }}</div>
       </v-sheet>
 
       <v-divider></v-divider>
@@ -69,11 +69,28 @@
 </template>
 
 <script>
+import firebase from '~/plugins/firebase'
 export default {
     data(){
         return {
-            drawer:true
+            drawer:true,
+            user:{
+              id:null,
+              displayName:''
+            }
         }
+    },
+    mounted(){
+       firebase.auth().onAuthStateChanged((user)=>{
+            if(user){
+              const id = user.uid
+              this.user.id = id
+              firebase.firestore().collection('users').doc(id).get()
+              .then(res=>{
+                this.user.displayName = res.data().displayName
+              })
+            }
+        })
     },
     methods:{
       home(){
@@ -89,7 +106,7 @@ export default {
         this.$router.push('/register')
       },
       mypage(){
-        this.$router.push('/mypage')
+        this.$router.push(`/user/${this.user.id}`)
       }
     }
 }

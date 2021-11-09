@@ -14,7 +14,7 @@
               <v-subheader>登録済みユーザー</v-subheader>
 
               <v-list two-line>
-                <template v-for="(user,index) in $store.getters.getUsers">
+                <template v-for="(user,index) in users">
                   <v-list-item
                     :key="index"
                   >
@@ -22,7 +22,7 @@
                     </v-list-item-avatar>
 
                     <v-list-item-content>
-                      <v-list-item-title>{{ user.id }}</v-list-item-title>
+                      <v-list-item-title>{{ user }}</v-list-item-title>
 
                       <v-list-item-subtitle>
                         <!-- {{word.sentence}} -->
@@ -46,8 +46,20 @@ import Navigation from '~/components/Navigation'
 import firebase from '~/plugins/firebase'
 
 export default {
+  data(){
+    return{
+      users:[]
+    }
+  },
     created(){
-        this.$store.dispatch("getUsers")
+      const users = []
+        firebase.firestore().collection('users').get()
+          .then(querySnapshot=>{
+            querySnapshot.forEach(doc=>{
+              users.push(doc.data().displayName)
+            })
+            this.users = users
+          })
     }
 }
 </script>

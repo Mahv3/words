@@ -1,14 +1,16 @@
 <template>
     <v-app>
         <Navigation />
-        <v-container class="row justify-center">
-            <form>
-                <input type="text" v-model="email" placeholder="emailを入力してください">
-                <input type="password" v-model="password" placeholder="passwordを入力してください">
-                <button @click.prevent="login">ログイン</button>
-                <button @click.prevent="loginGoogle">Googleアカウントでログイン</button>
-            </form>
-        </v-container>
+        <v-main>
+            <v-container class="row justify-center">
+                <form>
+                    <input type="text" v-model="email" placeholder="emailを入力してください">
+                    <input type="password" v-model="password" placeholder="passwordを入力してください">
+                    <button @click.prevent="login">ログイン</button>
+                    <button @click.prevent="loginGoogle">Googleアカウントでログイン</button>
+                </form>
+            </v-container>
+        </v-main>
     </v-app>
 </template>
 
@@ -28,12 +30,10 @@ export default {
                 return
             }
             this.$store.dispatch('login', {email : this.email, password : this.password})
-            this.$router.push('/')
         },
-        loginGoogle () {
+        loginGoogle(){
             this.$store.dispatch('loginGoogle')
-            this.$router.push('/')
-        },
+        }
     }
 }
 </script>

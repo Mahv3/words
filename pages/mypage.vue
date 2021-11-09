@@ -2,13 +2,16 @@
     <v-app>
         <Navigation />
         <v-container class="row justify-center">
-            <h3>Welcome {{user.email}}</h3>
+            <h3>Welcome</h3>
+
             <form>
                 <button @click.prevent="logout">ログアウト</button>
 
                 <nuxt-link to="/password">パスワード変更はこちらから</nuxt-link>
                 <nuxt-link to="/users">登録済みのユーザー</nuxt-link>
             </form>
+
+            <button @click.prevent="withdrawal">退会</button>
         </v-container>
     </v-app>
 </template>
@@ -19,17 +22,12 @@ import firebase from '~/plugins/firebase'
 export default {
     data(){
         return{
-            user:{
-                uid:'',
-                email:''
-            }
         }
     },
     mounted(){
         firebase.auth().onAuthStateChanged((user)=>{
             if(user){
-                this.user.uid = this.$store.state.user.uid
-                this.user.email = this.$store.state.user.email
+                return
             }else{
                 this.$router.push('/login')
             }
@@ -38,6 +36,9 @@ export default {
     methods:{
         logout(){
             this.$store.dispatch('logout')
+        },
+        withdrawal(){
+            this.$store.dispatch('withdrawal')
         }
     }
 }

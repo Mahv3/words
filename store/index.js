@@ -6,13 +6,7 @@ const wordRef = db.collection('words')
 const firestorage = firebase.storage()
 
 export const state = () => ({
-    words: [],
-    user: {
-        uid: '',
-        email: '',
-        login: false
-    },
-    users: []
+    words: []
 })
 
 export const actions = {
@@ -27,15 +21,17 @@ export const actions = {
             })
     },
     createWord({ commit }, payload) {
+        const uid = firebase.auth().currentUser.uid
         const word = {
             id: wordRef.doc().id,
+            uid: uid,
             sentence: payload.word.sentence,
             author: payload.word.author,
             publisher: payload.word.publisher,
             created_at: firebase.firestore.FieldValue.serverTimestamp()
         }
-        wordRef.add(word)
-        this.$router.push('/')
+        wordRef.doc(word.id).set(word)
+        $nuxt.$router.push('/')
     },
     login({ dispatch }, payload) {
         const email = payload.email
@@ -43,7 +39,7 @@ export const actions = {
         firebase.auth().signInWithEmailAndPassword(email, password)
             .then(() => {
                 alert('ログインしました')
-                dispatch('checkLogin')
+                $nuxt.$router.push('/')
             })
             .catch((error) => {
                 const errorMessage = error.message;
@@ -51,14 +47,12 @@ export const actions = {
                 alert('メールアドレス、またはパスワードに誤りがあります。')
             });
     },
-    loginGoogle({ dispatch }) {
-        let provider = new firebase.auth.GoogleAuthProvider()
+    loginGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider()
         firebase.auth().signInWithPopup(provider)
-            .then(function(result) {
+            .then(() => {
                 alert('ログインしました')
-                dispatch('checkLogin')
-            }).catch(function(error) {
-                console.log(error)
+                $nuxt.$router.push('/')
             })
     },
     register({ dispatch }, payload) {
@@ -67,46 +61,42 @@ export const actions = {
 
         firebase.auth().createUserWithEmailAndPassword(email, password)
             .then(user => {
-                console.log(user)
-                firebase.firestore().collection('users').doc(user.uid).set(user)
-                dispatch('checkLogin')
+                firebase.firestore().collection('users').doc(user.user.uid).set({
+                    displayName: email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                })
                 alert('登録しました')
                 firebase.auth().currentUser.sendEmailVerification()
+                $nuxt.$router.push('/')
             })
             .catch((error) => {
                 const errorMessage = error.message;
-                console.log(errorMessage)
+                alert(errorMessage)
             });
     },
-    checkLogin({ commit }) {
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                firebase.auth().currentUser.updateProfile({
-                    displayName: user.email
+    registerGoogle() {
+        let provider = new firebase.auth.GoogleAuthProvider()
+        firebase.auth().signInWithPopup(provider)
+            .then(user => {
+                console.log(user)
+                firebase.firestore().collection('users').doc(user.user.uid).set({
+                    displayName: user.user.email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 })
-                commit('getData', { uid: user.uid, email: user.email })
-                commit('switchLogin')
-            } else {
-                $nuxt.$router.push('/login')
-            }
-        })
+                firebase.auth().currentUser.sendEmailVerification()
+                alert('ログインしました')
+                $nuxt.$router.push('/')
+            }).catch(function(error) {
+                console.log(error)
+            })
     },
-    logout({ commit }) {
+    logout() {
         firebase.auth().signOut()
             .then(() => {
                 alert('ログアウトしました')
-                commit('logout')
             }).catch(function(error) {
                 console.log(error)
             });
-    },
-    getUsers({ commit }) {
-        const users = []
-        firebase.firestore().collection('users').get()
-            .then((res) => {
-                console.log(res.data)
-            })
-        commit('getUsers', users)
     }
 }
 
@@ -116,22 +106,6 @@ export const mutations = {
     },
     createWord(state, word) {
         state.words.push(word)
-    },
-    getData(state, payload) {
-        state.user.uid = payload.uid
-        state.user.email = payload.email
-    },
-    switchLogin(state) {
-        state.user.login = true
-    },
-    logout(state) {
-        state.user.uid = ''
-        state.user.email = ''
-        state.user.password = ''
-        state.user.login = false
-    },
-    getUsers(state, payload) {
-        state.users = payload.users
     }
 }
 
@@ -141,8 +115,5 @@ export const getters = {
     },
     user: state => {
         return state.user
-    },
-    getUsers: state => {
-        return state.users
     }
 }
