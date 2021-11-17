@@ -8,6 +8,7 @@
                     <input type="password" v-model="password" placeholder="passwordを入力してください">
                     <button @click.prevent="login">ログイン</button>
                     <button @click.prevent="loginGoogle">Googleアカウントでログイン</button>
+                    <nuxt-link to="/resetPassword">パスワードを忘れてしまった方はこちら</nuxt-link>
                 </form>
             </v-container>
         </v-main>

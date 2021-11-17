@@ -32,6 +32,7 @@
                         <v-list-item
                             :key="index"
                             link
+                            @click.prevent="wordDetail(index)"
                         >
                             <v-list-item-avatar color="grey darken-1">
                             </v-list-item-avatar>
@@ -93,24 +94,34 @@ export default {
         logout(){
             this.$store.dispatch('logout')
         },
-        withdrawal() {
+        async withdrawal() {
             const res = confirm('退会処理を行いますか？')
             if(res == true){
                 const id = this.$route.params.id
-                // firebase.auth().signOut()
-                // firebase.firestore().collection('users').doc(id).delete()
-                firebase.firestore().collection('words').where('uid','==',id).get()
-                .then(docs=>{
-                    docs.forEach(doc=>{
-                        doc.delete()
+                await firebase.firestore().collection('users').doc(id).delete()
+                    .catch(error=>{
+                        alert(error.message)
                     })
-                })
-                // this.$router.push('/')
-                // alert('退会しました')
+                await firebase.firestore().collection('words').where('uid','==',id).get()
+                    .then(docs =>{
+                        docs.forEach(doc=>{
+                            firebase.firestore().collection('words').doc(doc.id).delete()
+                        })
+                    })
+                alert('退会しました')
+                firebase.auth().signOut()
+                    .then(()=>{
+                        this.$router.push('/')
+                    })
             }else{
                 return
             }
-        }
+        },
+        wordDetail(index){
+        this.words = this.$store.getters.getWords
+        const id = this.words[index].id
+        this.$router.push(`/word/${id}`)
+      }
     }
 }
 </script>

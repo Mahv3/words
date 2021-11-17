@@ -42,9 +42,7 @@ export const actions = {
                 $nuxt.$router.push('/')
             })
             .catch((error) => {
-                const errorMessage = error.message;
-                console.log(errorMessage)
-                alert('メールアドレス、またはパスワードに誤りがあります。')
+                alert(error.message)
             });
     },
     loginGoogle() {
@@ -55,40 +53,38 @@ export const actions = {
                 $nuxt.$router.push('/')
             })
     },
-    register({ dispatch }, payload) {
+    async register({ dispatch }, payload) {
         const email = payload.email
         const password = payload.password
 
-        firebase.auth().createUserWithEmailAndPassword(email, password)
+        await firebase.auth().createUserWithEmailAndPassword(email, password)
             .then(user => {
                 firebase.firestore().collection('users').doc(user.user.uid).set({
                     displayName: email,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 })
-                alert('登録しました')
                 firebase.auth().currentUser.sendEmailVerification()
-                $nuxt.$router.push('/')
             })
             .catch((error) => {
-                const errorMessage = error.message;
-                alert(errorMessage)
+                alert(error.message)
             });
+        alert('登録しました')
+        $nuxt.$router.push('/')
     },
-    registerGoogle() {
+    async registerGoogle() {
         let provider = new firebase.auth.GoogleAuthProvider()
-        firebase.auth().signInWithPopup(provider)
+        await firebase.auth().signInWithPopup(provider)
             .then(user => {
-                console.log(user)
                 firebase.firestore().collection('users').doc(user.user.uid).set({
                     displayName: user.user.email,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 })
                 firebase.auth().currentUser.sendEmailVerification()
-                alert('ログインしました')
-                $nuxt.$router.push('/')
             }).catch(function(error) {
                 console.log(error)
             })
+        alert('ログインしました')
+        $nuxt.$router.push('/')
     },
     logout() {
         firebase.auth().signOut()

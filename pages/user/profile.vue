@@ -32,12 +32,12 @@ export default {
         })
     },
     methods:{
-        updateProfile(){
+        async updateProfile(){
             if(this.displayName == ""){
                 return
             }
             const id = firebase.auth().currentUser.uid
-           firebase.firestore().collection('users').doc(id).update({
+            await firebase.firestore().collection('users').doc(id).update({
                displayName : this.displayName,
                updatedAt:firebase.firestore.FieldValue.serverTimestamp()
            })

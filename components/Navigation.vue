@@ -71,9 +71,9 @@
 <script>
 import firebase from '~/plugins/firebase'
 export default {
+  props: ['drawer'],
     data(){
         return {
-            drawer:true,
             user:{
               id:null,
               displayName:''
@@ -81,14 +81,14 @@ export default {
         }
     },
     mounted(){
-       firebase.auth().onAuthStateChanged((user)=>{
-            if(user){
-              const id = user.uid
+        firebase.auth().onAuthStateChanged((user)=>{
+           if(user){
+             const id = user.uid
               this.user.id = id
               firebase.firestore().collection('users').doc(id).get()
-              .then(res=>{
-                this.user.displayName = res.data().displayName
-              })
+                .then(res=>{
+                  this.user.displayName = res.data().displayName
+                })
             }
         })
     },

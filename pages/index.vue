@@ -1,7 +1,11 @@
 <template>
   <v-app id="inspire">
+    <v-app-bar color="primary" class="white--text" app clipped-right>
+      <v-app-bar-nav-icon color="white" class="mr-4" @click.prevent="toggleDrawer"></v-app-bar-nav-icon>
+      words
+    </v-app-bar>
 
-    <Navigation />
+    <Navigation :drawer="this.drawer"/>
 
     <v-main>
       <v-container
@@ -9,9 +13,7 @@
         fluid
       >
         <v-row>
-          <v-col
-            cols="12"
-          >
+          <v-col cols="12">
             <v-card>
               <v-subheader>最近の投稿</v-subheader>
 
@@ -51,6 +53,7 @@ import firebase from '~/plugins/firebase'
   export default {
     data(){
       return{
+        drawer:true,
         words:[],
         word:{
           sentence:'',
@@ -67,6 +70,9 @@ import firebase from '~/plugins/firebase'
         this.words = this.$store.getters.getWords
         const id = this.words[index].id
         this.$router.push(`/word/${id}`)
+      },
+      toggleDrawer(){
+        this.drawer = !this.drawer
       }
     }
   }
