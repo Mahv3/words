@@ -2,21 +2,45 @@
     <v-app>
         <Navigation />
         <v-main>
-            <v-container>
-                <h3>word</h3>
-                {{word.sentence}}
-                <input type="text" v-model="update.sentence">
+            <v-card v-if="!this.edit" class="col-6 mx-auto my-12">
+                <v-card-title>{{word.author}}</v-card-title>
+                <v-card-subtitle>{{word.publisher}}</v-card-subtitle>
+                <v-divider class="mx-3"></v-divider>
+                <v-card-text>{{word.sentence}}</v-card-text>
 
-                <h3>author</h3>
-                {{word.author}}
-                <input type="text" v-model="update.author">
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn small @click.prevent="editWord">edit</v-btn>
+                    <v-btn small @click.prevent="deleteWord">delete</v-btn>
+                </v-card-actions>
+            </v-card>
 
-                <h3>publisher</h3>
-                {{word.publisher}}
-                <input type="text" v-model="update.publisher">
-            </v-container>
-            <button @click.prevent="updateWord">update</button>
-            <button @click.prevent="deleteWord">delete</button>
+
+            <v-card v-if="this.edit" class="col-6 mx-auto my-12">
+                <v-container>
+                    <v-row class="col-12">
+                        <v-card-title>edit word</v-card-title>
+                        <v-btn text @click.prevent="closeEdit" class="ml-auto">
+                            <v-icon>mdi-close-circle</v-icon>
+                        </v-btn>
+                    </v-row>
+                    <v-divider class="mx-3"></v-divider>
+
+                    <v-card-text>word</v-card-text>
+                    <v-textarea type="text" solo v-model="word.sentence"></v-textarea>
+
+                    <v-card-text>who said?</v-card-text>
+                    <v-text-field type="text" solo v-model="word.author"></v-text-field>
+
+                    <v-card-text>出版社</v-card-text>
+                    <v-text-field type="text" solo v-model="word.publisher"></v-text-field>
+
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn small @click.prevent="updateWord">update</v-btn>
+                     </v-card-actions>
+                </v-container>
+            </v-card>
 
         </v-main>
     </v-app>
@@ -29,65 +53,46 @@ import firebase from '~/plugins/firebase'
 export default {
     data(){
         return{
+            edit:false,
             word:{
                 sentence:'',
                 publisher:'',
                 author:''
-            },
-            update:{
-                sentence:'',
-                author:'',
-                publisher:''
             }
         }
     },
-    mounted(){
-       const id = this.$route.params.id
-       firebase.firestore().collection('words').doc(id).get()
-            .then(doc=>{
-                const data = doc.data()
-                this.word.publisher = data.publisher
-                this.word.sentence = data.sentence
-                this.word.author = data.author
-            })
+    async mounted(){
+        const id = this.$route.params.id
+        const res = await this.$store.dispatch("getWordDetail",{id})
+        const {sentence,publisher,author} = res.data()
+        this.word.sentence = sentence
+        this.word.publisher = publisher
+        this.word.author = author
     },
     methods:{
-        deleteWord(){
+        editWord(){
+            this.edit = true
+        },
+        closeEdit(){
+            this.edit = false
+        },
+        async deleteWord(){
             const res = confirm('削除しますか？')
             if(res == true){
                 const id = this.$route.params.id
-                firebase.firestore().collection('words').doc(id).delete()
+                const uid = firebase.auth().currentUser.uid
+                await firebase.firestore().collection('users').doc(uid).collection('words').doc(id).delete()
                 alert('削除しました')
                 this.$router.push('/')
             }
         },
-        updateWord(){
+        async updateWord(){
             const id = this.$route.params.id
-            if(this.update.sentence==="" && this.update.author === "" && this.update.publisher === ""){
-                return alert('変更箇所がありません')
-            }
-            if(!this.update.sentence == ""){
-                firebase.firestore().collection('words').doc(id).update({
-                    sentence:this.update.sentence
-                })
-            }
-            if(!this.update.author == ""){
-                firebase.firestore().collection('words').doc(id).update({
-                    author:this.update.author
-                })
-            }
-            if(!this.update.publisher ==""){
-                firebase.firestore().collection('words').doc(id).update({
-                    publisher:this.update.publisher
-                })
-            }
-            firebase.firestore().collection('words').doc(id).update({
-                updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+            await this.$store.dispatch('updateWord',{
+                id,
+                word:this.word
             })
-            .then(()=>{
-                alert('updated!')
-                this.$router.push('/')
-            })
+            this.edit = false
         }
     }
 }

@@ -1,11 +1,6 @@
 <template>
   <v-app id="inspire">
-    <v-app-bar color="primary" class="white--text" app clipped-right>
-      <v-app-bar-nav-icon color="white" class="mr-4" @click.prevent="toggleDrawer"></v-app-bar-nav-icon>
-      words
-    </v-app-bar>
-
-    <Navigation :drawer="this.drawer"/>
+    <Navigation/>
 
     <v-main>
       <v-container
@@ -28,12 +23,15 @@
                     </v-list-item-avatar>
 
                     <v-list-item-content>
-                      <v-list-item-title>{{ word.author }}</v-list-item-title>
+                      <v-list-item-title>
+                        {{word.sentence}}
+                      </v-list-item-title>
 
                       <v-list-item-subtitle>
-                        {{word.sentence}}
-                      </v-list-item-subtitle>
+                        {{ word.author }}
+                        </v-list-item-subtitle>
                     </v-list-item-content>
+
                   </v-list-item>
 
                   <v-divider :key="word.id"></v-divider>
@@ -63,7 +61,7 @@ import firebase from '~/plugins/firebase'
       }
     },
     created() {
-        this.$store.dispatch("fetchUsers");
+        this.$store.dispatch("fetchWords");
     },
     methods:{
       wordDetail(index){

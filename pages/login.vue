@@ -2,15 +2,26 @@
     <v-app>
         <Navigation />
         <v-main>
-            <v-container class="row justify-center">
-                <form>
-                    <input type="text" v-model="email" placeholder="emailを入力してください">
-                    <input type="password" v-model="password" placeholder="passwordを入力してください">
-                    <button @click.prevent="login">ログイン</button>
-                    <button @click.prevent="loginGoogle">Googleアカウントでログイン</button>
-                    <nuxt-link to="/resetPassword">パスワードを忘れてしまった方はこちら</nuxt-link>
-                </form>
-            </v-container>
+
+            <v-card class="col-8 mx-auto my-12">
+                    <v-row>
+                        <v-card-title>login</v-card-title>
+                    </v-row>
+                    <v-form>
+                        <v-text-field class="col-6 mx-auto" v-model="email" label="email" outlined></v-text-field>
+                        <v-text-field type="password" class="col-6 mx-auto" v-model="password" label="password" outlined></v-text-field>
+
+                        <v-divider></v-divider>
+                        <v-card-actions>
+                            <v-btn @click.prevent="login" color="primary" style="text-transform: none">login</v-btn>
+                            <v-btn @click.prevent="loginGoogle" color="cyan" style="text-transform: none">Googleアカウントでログイン</v-btn>
+
+                            <v-spacer></v-spacer>
+
+                            <nuxt-link to="/resetPassword">パスワードを忘れてしまった方はこちら</nuxt-link>
+                        </v-card-actions>
+                    </v-form>
+            </v-card>
         </v-main>
     </v-app>
 </template>

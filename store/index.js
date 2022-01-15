@@ -1,43 +1,62 @@
+import Vue from 'vue'
+import Vuex from 'vuex'
 import firebase from '~/plugins/firebase'
 import 'firebase/storage'
 
+Vue.use(Vuex)
+
+// TODO;wordとuserごとにfile作る
+// FIXME;todo
 const db = firebase.firestore()
 const wordRef = db.collection('words')
-const firestorage = firebase.storage()
+const userRef = db.collection('users')
+const auth = firebase.auth()
+const timeStamp = firebase.firestore.FieldValue.serverTimestamp()
 
 export const state = () => ({
-    words: []
+    words: [],
+    user: {}
 })
 
 export const actions = {
-    fetchUsers({ commit }) {
-        commit('initUsers')
-
-        wordRef.orderBy('created_at', 'desc').get()
-            .then(res => {
-                res.forEach(doc => {
-                    commit('createWord', doc.data())
-                })
+    async fetchWords({ commit }) {
+        try {
+            commit('initWords')
+            const uid = auth.currentUser.uid
+            const words = await userRef.doc(uid).collection('words').orderBy('created_at', 'desc').get()
+            words.forEach(word => {
+                commit('fetchWords', word.data())
             })
+        } catch (error) {
+            console.log(error)
+        }
     },
     createWord({ commit }, payload) {
         const uid = firebase.auth().currentUser.uid
+        const id = userRef.doc(uid).collection('words').doc().id
         const word = {
-            id: wordRef.doc().id,
-            uid: uid,
+            id,
+            uid,
             sentence: payload.word.sentence,
             author: payload.word.author,
             publisher: payload.word.publisher,
-            created_at: firebase.firestore.FieldValue.serverTimestamp()
+            created_at: timeStamp
         }
-        wordRef.doc(word.id).set(word)
-        $nuxt.$router.push('/')
+        userRef.doc(uid).collection('words').doc(id).set(word)
+            .then(() => {
+                alert('投稿しました。')
+                $nuxt.$router.push('/')
+            })
+            .catch(error => {
+                console.log(error)
+            })
     },
-    login({ dispatch }, payload) {
+    login({ commit }, payload) {
         const email = payload.email
         const password = payload.password
-        firebase.auth().signInWithEmailAndPassword(email, password)
-            .then(() => {
+        auth.signInWithEmailAndPassword(email, password)
+            .then((user) => {
+                commit('login', user)
                 alert('ログインしました')
                 $nuxt.$router.push('/')
             })
@@ -47,62 +66,92 @@ export const actions = {
     },
     loginGoogle() {
         const provider = new firebase.auth.GoogleAuthProvider()
-        firebase.auth().signInWithPopup(provider)
+        auth.signInWithPopup(provider)
             .then(() => {
                 alert('ログインしました')
                 $nuxt.$router.push('/')
             })
+            .catch(error => {
+                console.log(error)
+            })
     },
     async register({ dispatch }, payload) {
-        const email = payload.email
-        const password = payload.password
+        const userEmail = payload.email
+        const userPassword = payload.password
 
-        await firebase.auth().createUserWithEmailAndPassword(email, password)
-            .then(user => {
-                firebase.firestore().collection('users').doc(user.user.uid).set({
-                    displayName: email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                })
+        const user = await auth.createUserWithEmailAndPassword(userEmail, userPassword)
+        const uid = user.user.uid
+        db.collection('users').doc(uid).set({
+                uid: uid,
+                displayName: userEmail,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
                 firebase.auth().currentUser.sendEmailVerification()
+                alert('登録しました')
+                $nuxt.$router.push('/')
             })
             .catch((error) => {
-                alert(error.message)
+                console.log(error)
             });
-        alert('登録しました')
-        $nuxt.$router.push('/')
     },
-    async registerGoogle() {
+    registerGoogle() {
         let provider = new firebase.auth.GoogleAuthProvider()
-        await firebase.auth().signInWithPopup(provider)
+        auth.signInWithPopup(provider)
             .then(user => {
-                firebase.firestore().collection('users').doc(user.user.uid).set({
+                db.collection('users').doc(user.user.uid).set({
                     displayName: user.user.email,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 })
-                firebase.auth().currentUser.sendEmailVerification()
+                auth.currentUser.sendEmailVerification()
+                alert('ログインしました')
+                $nuxt.$router.push('/')
             }).catch(function(error) {
                 console.log(error)
             })
-        alert('ログインしました')
-        $nuxt.$router.push('/')
     },
     logout() {
-        firebase.auth().signOut()
+        auth.signOut()
             .then(() => {
                 alert('ログアウトしました')
             }).catch(function(error) {
                 console.log(error)
             });
+    },
+    getWordDetail({ commit }, payload) {
+        const id = payload.id
+        const uid = auth.currentUser.uid
+        return userRef.doc(uid).collection('words').doc(id).get()
+    },
+    updateWord({ commit }, payload) {
+        const id = payload.id
+        const uid = auth.currentUser.uid
+        const { sentence, author, publisher } = payload.word
+        userRef.doc(uid).collection('words').doc(id).update({
+                sentence,
+                author,
+                publisher,
+                updated_at: timeStamp
+            })
+            .then(() => {
+                return alert('updated')
+            })
+            .catch((error) => {
+                console.log(error.message)
+            })
     }
 }
 
 export const mutations = {
-    initUsers(state) {
+    initWords(state) {
         state.words = []
     },
-    createWord(state, word) {
+    login(state, user) {
+        state.displayName = user.user.displayName
+    },
+    fetchWords(state, word) {
         state.words.push(word)
-    }
+    },
 }
 
 export const getters = {
