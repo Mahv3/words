@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+	match /databases/{database}/documents {
+		match /{document=**}{
+			allow read, write : if true;
+		}
+
+	// function isAnyAuthenticated(){
+		// 	return request.auth != null;
+		// }
+	// function isUserAuthenticated(userId){
+		// 	return isAnyAuthenticated() && userId == request.auth.uid;
+		// }
+	// match /users/{userId}{
+		// 	allow read, write: if isAnyAuthenticated();
+
+	// 	match /words/{wordId}{
+		// 		allow read, write: if isAnyAuthenticated();
+
+	// 		match /comment/{commentId}{
+		// 			allow read, write: if isAnyAuthenticated();
+
+	// 			match /likedUsers/{likedUserId}{
+		// 				allow read, write: if isAnyAuthenticated();
+		// 			}
+		// 		}
+	// 		match /likedUsers/{likedUserId}{
+		// 			allow read, write:if isAnyAuthenticated();
+		// 		}
+		// 	}
+	// 	match /likedPosts/{likedPostId}{
+		// 		allow read, write: if isAnyAuthenticated();
+		// 	}
+		// }
+	}
+}

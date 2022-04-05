@@ -2,14 +2,14 @@
     <v-app>
         <Navigation />
         <v-main>
-            <v-container class="py-8 px-6" fluid>
-                <v-row>
-                    <v-col cols="12">
-                        <v-card>
-                            <input fluid type="text"  v-model="email" placeholder="登録しているemialを入力してください">
-                        </v-card>
-                    </v-col>
-                </v-row>
+            <v-container class="col-12" fluid>
+                <v-card elevation="0">
+                    <v-text-field class="col-6 mx-auto mt-12" fluid type="text"  v-model="email" placeholder="登録しているemailを入力してください" />
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn text color="blue" @click.prevent="sendEmailToResetPassword">送信</v-btn>
+                    </v-card-actions>
+                </v-card>
             </v-container>
         </v-main>
     </v-app>
@@ -22,7 +22,13 @@ export default {
         return{
             email:''
         }
+    },
+    methods:{
+        sendEmailToResetPassword(){
+            this.$store.dispatch("modules/firebase/sendEmailToResetPassword",{
+                email: this.email
+            })
+        }
     }
-
 }
 </script>

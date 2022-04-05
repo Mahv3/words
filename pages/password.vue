@@ -1,15 +1,19 @@
 <template>
     <v-app>
-        <Navigation />
-
-        <v-container class="row justify-center">
-            <form>
-                <input type="password" v-model="password" placeholder="新しいパスワードを入力してください">
-
-                <button @click.prevent="createNewPassword">変更</button>
-                <button @click.prevent="passwordReset">emailから変更をする</button>
-            </form>
-        </v-container>
+        <v-main>
+            <Navigation />
+            <v-container class="row justify-center col-12 mt-12">
+                <v-card elevation="0" class="col-12">
+                <form>
+                    <v-text-field class="col-6 mx-auto" type="email" v-model="email" placeholder="登録しているemailを入力してください" />
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn class="mx-auto" @click.prevent="sendEmailToResetPassword">送信</v-btn>
+                    </v-card-actions>
+                </form>
+                </v-card>
+            </v-container>
+        </v-main>
     </v-app>
 </template>
 
@@ -19,35 +23,23 @@ import firebase from '~/plugins/firebase'
 export default {
     data(){
         return{
-            password:''
+            email:''
         }
     },
     methods:{
-        createNewPassword(){
-            const newPassword = this.password
-            const passLength = this.password.length
-
-            firebase.auth().currentUser.updatePassword(newPassword)
-                .then(()=>{
-                    alert('パスワードを変更しました。')
-                    firebase.auth().signOut()
-                    this.$router.push('/login')
-                })
-                .catch(()=>{
-                    if(passLength < 6){
-                        alert('パスワードは6文字以上で入力してください')
-                    }
-                })
-        },
-        passwordReset(){
-            const  email = firebase.auth().currentUser.email
-            firebase.auth().sendPasswordResetEmail(email)
-                .then(()=>{
-                    alert('emailにパスワード変更のリンクを送信しました')
-                })
-                .catch(()=>{
-                    alert('emailにパスワード変更のリンクを送信できませんでした')
-                })
+        sendEmailToResetPassword(){
+            this.$store.dispatch("modules/firebase/sendEmailToResetPassword",{
+                email: this.email
+            })
+        //     const  email = firebase.auth().currentUser.email
+        //     firebase.auth().sendPasswordResetEmail(email)
+        //         .then(()=>{
+        //             alert('emailにパスワード変更のリンクを送信しました')
+        //         })
+        //         .catch(()=>{
+        //             alert('emailにパスワード変更のリンクを送信できませんでした')
+        //         })
+        // }
         }
     }
 }

@@ -1,16 +1,31 @@
 <template>
     <v-app>
         <Navigation />
-
-        <v-container class="row justify-center">
-            <form>
-                <h3>displayName</h3>
-                <div>Now {{user.displayName}}</div>
-                <input type="text" class="yellow" v-model="displayName">
-            </form>
-
-            <button @click.prevent="updateProfile">update!</button>
-        </v-container>
+        <v-main>
+            <v-container class="col-12 ma-0 pa-0">
+                <v-card elevation="0">
+                    <v-form class="mx-auto col-6">
+                        <v-card-title>displayName</v-card-title>
+                        <div class="my-6">Now {{user.displayName}}</div>
+                        <v-text-field type="text" class="col-8 mx-auto" solo v-model="displayName"></v-text-field>
+                        <v-card-title>icon</v-card-title>
+                        <img class="col-8 mx-auto" v-if="uploadImageURL" :src="uploadImageURL" alt="">
+                        <v-file-input
+                            class="col-8 mx-auto"
+                            show-size
+                            accept="image/*"
+                            prepend-icon="mdi-image"
+                            label="アイコンにしたい画像を選択してください"
+                            @change="onImagePicked"
+                        ></v-file-input>
+                    </v-form>
+                    <v-card-actions class="col-6 mx-auto">
+                        <v-spacer></v-spacer>
+                        <v-btn small solo @click.prevent="updateProfile">update!</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-container>
+        </v-main>
     </v-app>
 </template>
 
@@ -21,30 +36,46 @@ export default {
     data(){
         return{
             user:{},
-            displayName:''
+            displayName:'',
+            inputImage: null,
+            uploadImage: "",
+            file: {}
+,            uploadImageURL:''
         }
     },
-    mounted(){
-        const id = firebase.auth().currentUser.uid
-        firebase.firestore().collection('users').doc(id).get()
-        .then(res=>{
-            this.user = res.data()
-        })
+    async mounted(){
+        const user = await this.$store.dispatch('modules/firebase/getSignedUser')
+        this.user = user
+        this.displayName = user.displayName
     },
     methods:{
         async updateProfile(){
             if(this.displayName == ""){
-                return
+                return alert('無記入の登録はできません。')
             }
-            const id = firebase.auth().currentUser.uid
-            await firebase.firestore().collection('users').doc(id).update({
-               displayName : this.displayName,
-               updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-           })
-           alert('updated!')
-           this.$router.push(`/user/${id}`)
+            this.$store.dispatch('modules/firebase/updateProfile',{
+                file: this.file,
+                displayName: this.displayName,
+                uploadImageURL: this.uploadImageURL
+            })
+        },
+        onImagePicked(e){
+            // イベントで流れてくる
+            if(e !== undefined && e !== null) {
+                // eを使う
+                const reader = new FileReader()
+                reader.onload = () => {
+                    this.uploadImage = reader.result + ' '
+                }
+                reader.readAsDataURL(e)
+                this.file = e
+                reader.addEventListener('load', () => {
+                    this.uploadImageURL = reader.result
+                })
+            }else{
+                this.uploadImageURL = ''
+            }
         }
     }
-
 }
 </script>

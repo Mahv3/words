@@ -10,5 +10,4 @@ if (!firebase.apps.length) {
         appId: "1:809697591167:web:dc8cedf84ddc87a39b644a"
     })
 }
-
 export default firebase

@@ -3,7 +3,7 @@
         <Navigation />
         <v-main>
 
-            <v-card class="col-8 mx-auto my-12">
+            <v-card class="col-8 mx-auto my-12" elevation="0">
                     <v-row>
                         <v-card-title>login</v-card-title>
                     </v-row>
@@ -31,20 +31,19 @@ import Navigation from '~/components/Navigation'
 export default {
     data(){
         return{
-            email:'',
-            password:''
+            email:"",
+            password:""
         }
     },
     methods:{
         login(){
-            if(this.email === '' || this.password === ''){
-                alert('メールアドレスとパスワードを入力してください')
-                return
-            }
-            this.$store.dispatch('login', {email : this.email, password : this.password})
+            this.$store.dispatch('modules/firebase/loginWithEmailAndPassword', {
+                email : this.email,
+                password : this.password
+            })
         },
         loginGoogle(){
-            this.$store.dispatch('loginGoogle')
+            this.$store.dispatch('modules/firebase/loginWithGoogleAccount')
         }
     }
 }
