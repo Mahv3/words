@@ -83,19 +83,14 @@ export default {
 	data(){
         return {
         	drawer:null,
-			user:{
-				id:null,
-				displayName: "",
-				photoURL: ""
-            }
+			user:{}
         }
     },
     async mounted(){
-		const user = this.$store.getters["modules/user/getUserInfo"]
-      if(!user == ""){
-        this.user.displayName = user.displayName
-			  this.user.photoURL = user.photoURL
-		  }
+		const user = await this.$store.dispatch("modules/firebase/getUserInfo")
+		if(!user == ""){
+			this.user = user
+		}
     },
     methods:{
     	home(){
