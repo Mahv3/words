@@ -1,4 +1,6 @@
 import firebase from '~/plugins/firebase'
+import "firebase/firestore"
+import "firebase/auth"
 import "firebase/storage"
 
 const db = firebase.firestore()
