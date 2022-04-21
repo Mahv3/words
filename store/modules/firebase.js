@@ -73,7 +73,8 @@ export default {
             return auth.currentUser.uid
         },
         async getUserInfo(){
-            if(!auth.currentUser == null){
+            if(auth.currentUser.uid){
+                console.log("ol")
                 const uid = auth.currentUser.uid
                 const userInfo = await usersRef.doc(uid).get()
                 return userInfo.data()
