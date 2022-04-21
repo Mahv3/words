@@ -73,9 +73,13 @@ export default {
             return auth.currentUser.uid
         },
         async getUserInfo(){
-            const uid = auth.currentUser.uid
-            const userInfo = await usersRef.doc(uid).get()
-            return userInfo.data()
+            if(!auth.currentUser == null){
+                const uid = auth.currentUser.uid
+                const userInfo = await usersRef.doc(uid).get()
+                return userInfo.data()
+            }else{
+                return
+            }
         },
         async createNewPassword({context},{newPassword}){
             await auth.currentUser.updatePassword(newPassword)

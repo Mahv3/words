@@ -83,13 +83,17 @@ export default {
 	data(){
         return {
         	drawer:null,
-			user:{}
+			user:{
+				displayName: ""
+			}
         }
     },
     async mounted(){
 		const user = await this.$store.dispatch("modules/firebase/getUserInfo")
 		if(!user == ""){
 			this.user = user
+		}else{
+			this.user.displayName = ""
 		}
     },
     methods:{
